@@ -56,6 +56,9 @@ export default function App() {
   // Pay Fees section
   const [payClass, setPayClass] = useState("");
 
+  // Secure Payment status
+  const [payStatus, setPayStatus] = useState("");
+
   // Subjects dropdowns
   const [openDropdowns, setOpenDropdowns] = useState<boolean[]>([
     false,
@@ -91,6 +94,25 @@ export default function App() {
   const handlePayFees = () => {
     const amount = payClass ? (classFees[payClass] ?? 499) : 499;
     window.location.href = `upi://pay?pa=6371411866@upi&pn=FrontlineTutorial&am=${amount}&cu=INR`;
+  };
+
+  const paySecure = () => {
+    const upiID = "6371411866@upi";
+    const studentName = name.trim() || "Student";
+    const amount = "499";
+    const txnNote = `FT_${Date.now()}`;
+    const upiURL = `upi://pay?pa=${upiID}&pn=FrontlineTutorial&am=${amount}&cu=INR&tn=${txnNote}`;
+
+    window.location.href = upiURL;
+    setPayStatus("🔄 Opening payment app... Complete payment securely");
+
+    setTimeout(() => {
+      const msg = `Payment Attempt\nName: ${studentName}\nAmount: ₹${amount}\nTxn Ref: ${txnNote}`;
+      window.open(
+        `https://wa.me/916371411866?text=${encodeURIComponent(msg)}`,
+        "_blank",
+      );
+    }, 4000);
   };
 
   const startTest = (sub: Subject) => {
@@ -282,7 +304,61 @@ export default function App() {
           </form>
         </div>
 
-        {/* ─── Card 2: Subjects ─── */}
+        {/* ─── Card 2: Secure Payment ─── */}
+        <div
+          style={{
+            background: "#1f4d1f",
+            borderRadius: "10px",
+            padding: "20px 15px",
+            margin: "10px 0",
+            textAlign: "center",
+          }}
+          data-ocid="secure_payment.card"
+        >
+          <h3
+            style={{
+              color: "#f4e27a",
+              margin: "0 0 18px 0",
+              fontSize: "20px",
+            }}
+          >
+            💳 Secure Payment
+          </h3>
+
+          <button
+            type="button"
+            onClick={paySecure}
+            style={{
+              padding: "15px 30px",
+              fontSize: "18px",
+              background: "#28a745",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              width: "100%",
+            }}
+            data-ocid="secure_payment.primary_button"
+          >
+            Pay Now (UPI Apps)
+          </button>
+
+          {payStatus && (
+            <p
+              style={{
+                marginTop: "14px",
+                fontSize: "14px",
+                color: "rgba(255,255,255,0.85)",
+              }}
+              data-ocid="secure_payment.status"
+            >
+              {payStatus}
+            </p>
+          )}
+        </div>
+
+        {/* ─── Card 3: Subjects ─── */}
         <div
           style={{
             background: "#1f4d1f",
@@ -370,7 +446,7 @@ export default function App() {
           ))}
         </div>
 
-        {/* ─── Card 3: Weekly Test ─── */}
+        {/* ─── Card 4: Weekly Test ─── */}
         <div
           style={{
             background: "#1f4d1f",
@@ -453,7 +529,7 @@ export default function App() {
           )}
         </div>
 
-        {/* ─── Card 4: Pay Fees ─── */}
+        {/* ─── Card 5: Pay Fees ─── */}
         <div
           style={{
             background: "#1f4d1f",
@@ -513,7 +589,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* ─── Card 5: Validate UPI ID ─── */}
+        {/* ─── Card 6: Validate UPI ID ─── */}
         <div
           style={{
             background: "#1f4d1f",
