@@ -44,11 +44,12 @@ const classFees: Record<string, number> = {
   "Class 10": 499,
 };
 
+const OWNER_NUMBER = "6371411866";
+
 export default function App() {
   // Admission
   const [name, setName] = useState("");
   const [cls, setCls] = useState("");
-  const [subject, setSubject] = useState("Math");
   const [phone, setPhone] = useState("");
 
   // Pay Fees section
@@ -68,6 +69,13 @@ export default function App() {
     result: null,
   });
 
+  // UPI Validation
+  const [upiId, setUpiId] = useState("");
+  const [upiResult, setUpiResult] = useState<{
+    valid: boolean;
+    message: string;
+  } | null>(null);
+
   const toggleDropdown = (index: number) => {
     setOpenDropdowns((prev) => prev.map((v, i) => (i === index ? !v : v)));
   };
@@ -85,14 +93,21 @@ export default function App() {
     }, 3000);
   };
 
-  const handleApplyPay = () => {
+  const processAdmission = () => {
     const fee = cls ? (classFees[cls] ?? 499) : 499;
-    const id = `FT${Math.floor(Math.random() * 10000)}`;
-    window.location.href = `upi://pay?pa=6371411866@upi&pn=FrontlineTutorial&am=${fee}&cu=INR`;
-    setTimeout(() => {
-      const msg = `New Admission%0AID:${id}%0AName:${name}%0AClass:${cls}%0ASubject:${subject}%0APhone:${phone}%0AFee:%E2%82%B9${fee}`;
+    const studentId = `FT${Math.floor(1000 + Math.random() * 9000)}`;
+
+    if (phone.trim() === OWNER_NUMBER) {
+      alert("Owner Access Granted ✅ No Payment Needed");
+      const msg = `OWNER ENTRY%0AID: ${studentId}%0AName: ${name}%0AClass: ${cls}`;
       window.open(`https://wa.me/916371411866?text=${msg}`, "_blank");
-    }, 3000);
+    } else {
+      window.location.href = `upi://pay?pa=6371411866@upi&pn=FrontlineTutorial&am=${fee}&cu=INR`;
+      setTimeout(() => {
+        const msg = `New Admission%0AID: ${studentId}%0AName: ${encodeURIComponent(name)}%0AClass: ${encodeURIComponent(cls)}%0APhone: ${encodeURIComponent(phone)}`;
+        window.open(`https://wa.me/916371411866?text=${msg}`, "_blank");
+      }, 3000);
+    }
   };
 
   const handlePayFees = () => {
@@ -111,6 +126,19 @@ export default function App() {
     }));
   };
 
+  const validateUPI = () => {
+    const trimmed = upiId.trim();
+    const isValid = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(trimmed);
+    if (!trimmed || !isValid) {
+      setUpiResult({
+        valid: false,
+        message: "❌ Invalid UPI ID. Format: name@bank",
+      });
+    } else {
+      setUpiResult({ valid: true, message: "✅ Valid UPI ID!" });
+    }
+  };
+
   const currentYear = new Date().getFullYear();
   const selectedFee = cls ? classFees[cls] : null;
   const selectedPayFee = payClass ? classFees[payClass] : null;
@@ -127,20 +155,60 @@ export default function App() {
         alignItems: "center",
       }}
     >
-      {/* Header */}
-      <header
+      {/* ─── Fixed Top Bar ─── */}
+      <div
         style={{
-          background: "#1f4d1f",
+          position: "fixed",
+          top: 0,
           width: "100%",
-          padding: "15px",
-          textAlign: "center",
-          color: "#f4e27a",
-          fontSize: "22px",
-          fontWeight: "bold",
+          background: "#1f4d1f",
+          padding: "10px 15px",
+          zIndex: 1000,
+          boxSizing: "border-box",
         }}
+        data-ocid="header.section"
       >
-        📚 Frontline Tutorial App
-      </header>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: "#f4e27a",
+            fontSize: "16px",
+          }}
+        >
+          <span style={{ fontWeight: "700" }}>🎓 Frontline Tutorial</span>
+          <div style={{ display: "flex", gap: "14px" }}>
+            <a
+              href="tel:6371411866"
+              style={{
+                color: "#fff",
+                textDecoration: "none",
+                fontSize: "15px",
+              }}
+              data-ocid="header.link"
+            >
+              📞 Call
+            </a>
+            <a
+              href="https://wa.me/916371411866"
+              style={{
+                color: "#fff",
+                textDecoration: "none",
+                fontSize: "15px",
+              }}
+              target="_blank"
+              rel="noreferrer"
+              data-ocid="header.link"
+            >
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Spacer for fixed header */}
+      <div style={{ height: "46px", width: "100%" }} />
 
       {/* Cards container */}
       <div
@@ -189,7 +257,6 @@ export default function App() {
             <option value="Class 10">Class 10</option>
           </select>
 
-          {/* Fee display */}
           {selectedFee !== null && (
             <p
               style={{
@@ -204,22 +271,9 @@ export default function App() {
           )}
           <br />
 
-          <select
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            style={inputStyle}
-            data-ocid="admission.select"
-          >
-            <option value="Math">Math</option>
-            <option value="English">English</option>
-            <option value="Science">Science</option>
-          </select>
-          <br />
-          <br />
-
           <input
             type="text"
-            placeholder="Phone"
+            placeholder="Phone Number"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             style={inputStyle}
@@ -228,10 +282,9 @@ export default function App() {
           <br />
           <br />
 
-          {/* Apply + Pay (full details) */}
           <button
             type="button"
-            onClick={handleApplyPay}
+            onClick={processAdmission}
             style={{
               padding: "10px 20px",
               background: "#25D366",
@@ -246,10 +299,9 @@ export default function App() {
             }}
             data-ocid="admission.submit_button"
           >
-            Apply + Pay{selectedFee !== null ? ` ₹${selectedFee}` : ""}
+            Apply Now
           </button>
 
-          {/* Pay Admission button */}
           <button
             type="button"
             onClick={handlePayAdmission}
@@ -499,6 +551,71 @@ export default function App() {
           >
             Pay Fees{selectedPayFee !== null ? ` ₹${selectedPayFee}` : ""}
           </button>
+        </div>
+
+        {/* ─── Card 5: Validate UPI ID ─── */}
+        <div
+          style={{
+            background: "#1f4d1f",
+            borderRadius: "10px",
+            padding: "15px",
+            margin: "10px 0",
+          }}
+          data-ocid="upi.card"
+        >
+          <h3 style={{ color: "#f4e27a", margin: "0 0 14px 0" }}>
+            🔍 Validate UPI ID
+          </h3>
+
+          <input
+            type="text"
+            placeholder="example@upi"
+            value={upiId}
+            onChange={(e) => {
+              setUpiId(e.target.value);
+              setUpiResult(null);
+            }}
+            style={inputStyle}
+            data-ocid="upi.input"
+          />
+          <br />
+          <br />
+
+          <button
+            type="button"
+            onClick={validateUPI}
+            style={{
+              padding: "10px 20px",
+              background: "#25D366",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "15px",
+              cursor: "pointer",
+              width: "100%",
+              fontWeight: "bold",
+            }}
+            data-ocid="upi.primary_button"
+          >
+            Validate UPI
+          </button>
+
+          {upiResult !== null && (
+            <p
+              style={{
+                marginTop: "12px",
+                fontSize: "15px",
+                fontWeight: "bold",
+                color: upiResult.valid ? "#6ef48a" : "#ff7c7c",
+                margin: "12px 0 0 0",
+              }}
+              data-ocid={
+                upiResult.valid ? "upi.success_state" : "upi.error_state"
+              }
+            >
+              {upiResult.message}
+            </p>
+          )}
         </div>
       </div>
 
