@@ -44,13 +44,14 @@ const classFees: Record<string, number> = {
   "Class 10": 499,
 };
 
-const OWNER_NUMBER = "6371411866";
+const ADMIN_WHATSAPP = "916371411866";
 
 export default function App() {
   // Admission
   const [name, setName] = useState("");
   const [cls, setCls] = useState("");
-  const [phone, setPhone] = useState("");
+  const [regno, setRegno] = useState("");
+  const [age, setAge] = useState("");
 
   // Pay Fees section
   const [payClass, setPayClass] = useState("");
@@ -80,34 +81,11 @@ export default function App() {
     setOpenDropdowns((prev) => prev.map((v, i) => (i === index ? !v : v)));
   };
 
-  const handlePayAdmission = () => {
-    const amount = cls === "Class 8" ? 2 : 499;
-    const upi = `upi://pay?pa=6371411866@upi&pn=FrontlineTutorial&am=${amount}&cu=INR&tn=Admission for ${cls}`;
-    window.location.href = upi;
-    setTimeout(() => {
-      const msg = `Admission Payment Done\nName: ${name}\nClass: ${cls}\nAmount: ₹${amount}`;
-      window.open(
-        `https://wa.me/916371411866?text=${encodeURIComponent(msg)}`,
-        "_blank",
-      );
-    }, 3000);
-  };
-
-  const processAdmission = () => {
-    const fee = cls ? (classFees[cls] ?? 499) : 499;
-    const studentId = `FT${Math.floor(1000 + Math.random() * 9000)}`;
-
-    if (phone.trim() === OWNER_NUMBER) {
-      alert("Owner Access Granted ✅ No Payment Needed");
-      const msg = `OWNER ENTRY%0AID: ${studentId}%0AName: ${name}%0AClass: ${cls}`;
-      window.open(`https://wa.me/916371411866?text=${msg}`, "_blank");
-    } else {
-      window.location.href = `upi://pay?pa=6371411866@upi&pn=FrontlineTutorial&am=${fee}&cu=INR`;
-      setTimeout(() => {
-        const msg = `New Admission%0AID: ${studentId}%0AName: ${encodeURIComponent(name)}%0AClass: ${encodeURIComponent(cls)}%0APhone: ${encodeURIComponent(phone)}`;
-        window.open(`https://wa.me/916371411866?text=${msg}`, "_blank");
-      }, 3000);
-    }
+  const sendAdmission = (e: React.FormEvent) => {
+    e.preventDefault();
+    const message = `🎓 *New Admission Request*\n👤 Name: ${name}\n🏫 Class: ${cls}\n🆔 Reg No: ${regno}\n🎂 Age: ${age}`;
+    const url = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
   };
 
   const handlePayFees = () => {
@@ -140,7 +118,6 @@ export default function App() {
   };
 
   const currentYear = new Date().getFullYear();
-  const selectedFee = cls ? classFees[cls] : null;
   const selectedPayFee = payClass ? classFees[payClass] : null;
 
   return (
@@ -220,106 +197,89 @@ export default function App() {
           flex: 1,
         }}
       >
-        {/* ─── Card 1: Admission ─── */}
+        {/* ─── Card 1: New Admission Form ─── */}
         <div
           style={{
             background: "#1f4d1f",
             borderRadius: "10px",
-            padding: "15px",
+            padding: "20px 15px",
             margin: "10px 0",
           }}
           data-ocid="admission.card"
         >
-          <h3 style={{ color: "#f4e27a", margin: "0 0 14px 0" }}>
-            🎓 Admission
+          <h3
+            style={{
+              color: "#f4e27a",
+              margin: "0 0 18px 0",
+              textAlign: "center",
+              fontSize: "20px",
+            }}
+          >
+            🎓 New Admission Form
           </h3>
 
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-            data-ocid="admission.input"
-          />
-          <br />
-          <br />
+          <form onSubmit={sendAdmission}>
+            <input
+              type="text"
+              placeholder="Student Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={{ ...inputStyle, marginBottom: "12px" }}
+              data-ocid="admission.input"
+            />
 
-          <select
-            value={cls}
-            onChange={(e) => setCls(e.target.value)}
-            style={inputStyle}
-            data-ocid="admission.select"
-          >
-            <option value="">Select Class</option>
-            <option value="Class 8">Class 8</option>
-            <option value="Class 9">Class 9</option>
-            <option value="Class 10">Class 10</option>
-          </select>
+            <select
+              value={cls}
+              onChange={(e) => setCls(e.target.value)}
+              required
+              style={{ ...inputStyle, marginBottom: "12px" }}
+              data-ocid="admission.select"
+            >
+              <option value="">Select Class</option>
+              <option value="Class 8">Class 8</option>
+              <option value="Class 9">Class 9</option>
+              <option value="Class 10">Class 10</option>
+            </select>
 
-          {selectedFee !== null && (
-            <p
+            <input
+              type="text"
+              placeholder="Registration No"
+              value={regno}
+              onChange={(e) => setRegno(e.target.value)}
+              required
+              style={{ ...inputStyle, marginBottom: "12px" }}
+              data-ocid="admission.input"
+            />
+
+            <input
+              type="number"
+              placeholder="Age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              required
+              style={{ ...inputStyle, marginBottom: "18px" }}
+              data-ocid="admission.input"
+            />
+
+            <button
+              type="submit"
               style={{
-                margin: "8px 0 0 0",
-                fontSize: "14px",
-                color: "#f4e27a",
+                padding: "12px 25px",
+                background: "#25D366",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "16px",
+                cursor: "pointer",
+                width: "100%",
                 fontWeight: "bold",
               }}
+              data-ocid="admission.submit_button"
             >
-              Fee: ₹{selectedFee}
-            </p>
-          )}
-          <br />
-
-          <input
-            type="text"
-            placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            style={inputStyle}
-            data-ocid="admission.input"
-          />
-          <br />
-          <br />
-
-          <button
-            type="button"
-            onClick={processAdmission}
-            style={{
-              padding: "10px 20px",
-              background: "#25D366",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "15px",
-              cursor: "pointer",
-              width: "100%",
-              fontWeight: "bold",
-              marginBottom: "8px",
-            }}
-            data-ocid="admission.submit_button"
-          >
-            Apply Now
-          </button>
-
-          <button
-            type="button"
-            onClick={handlePayAdmission}
-            style={{
-              padding: "10px 20px",
-              background: "#f4e27a",
-              color: "#1a3d1a",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "15px",
-              cursor: "pointer",
-              width: "100%",
-              fontWeight: "bold",
-            }}
-            data-ocid="admission.pay_button"
-          >
-            Pay Admission
-          </button>
+              📲 Apply Now
+            </button>
+          </form>
         </div>
 
         {/* ─── Card 2: Subjects ─── */}
